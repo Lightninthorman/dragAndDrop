@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Drag Drop Test</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/themes/base/jquery-ui.min.css" integrity="sha512-ELV+xyi8IhEApPS/pSj66+Jiw+sOT1Mqkzlh8ExXihe4zfqbWkxPRi8wptXIO9g73FSlhmquFlUOuMSoXz5IRw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+
+    <style>
+      .draggable {
+        cursor: move;
+      }
+      .draggable p {
+        cursor: text;
+      }
+      .mover {
+        opacity: 0;
+        display: none;
+        width: 1rem;
+        height: 1rem;
+        justify-content: center;
+        align-items: center;
+        position: absolute;
+        background-color: darkolivegreen;
+        color: aliceblue;
+        top: -1rem;
+        left: -1rem;
+        transition: opacity 0.5s;
+      }
+      .show_mover {
+        opacity: 1;
+        display: flex;
+      }
+      .hide_mover {
+        display: none;
+      }
+      #edit_container {
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      #edit-336x280 {
+        width: 336px;
+        height: 280px;
+        border: 2px solid lightslategray;
+        background-color: blueviolet;
+      }
+      .headline,
+      .image_container {
+        width: fit-content;
+        height: fit-content;
+      }
+      .image_container img {
+        width: 100px;
+      }
+      .ad_container {
+        overflow: hidden;
+        position: relative;
+      }
+      .ad_container div {
+        position: absolute;
+      }
+      #edit_window_container {
+        background-color: red;
+        height: 100px;
+        width: 100%;
+      }
+      .edit_window {
+        min-height: 300px;
+        min-width: 250px;
+        display: flex;
+        align-items: center;
+        position: absolute;
+        right: -250px;
+        top: 0;
+        transition: right 0.25s;
+      }
+      .active_edit_window {
+        right: 0;
+      }
+      .selected {
+        box-shadow: 0 0 5px 3px orange;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div id="edit_container">
+        <div id="edit-336x280" class="ad_container">
+          <div class="headline ui-widget-content draggable resizable editable" data-widget="headline">
+            <!-- <div class="mover">X</div> -->
+            <p contenteditable="true">Drag me around</p>
+          </div>
+          <div class="image_container ui-widget-content draggable editable" data-widget="image">
+            <img class="ui-widget-content resizable editable" src="https://media.istockphoto.com/id/184941527/photo/male-chimpanzee-in-business-clothes.jpg?b=1&s=170667a&w=0&k=20&c=3O29CWBI3AG1sphbCHeM3au0cP5zt_8fS8SD5R6rH6I=" />
+          </div>
+        </div>
+      </div>
+    </main>
+    <div class="edit_window">
+      <div id="edit_window_container">
+        <div id="edit_form"></div>
+      </div>
+    </div>
+    <script>
+      $(function () {
+        $(".editable").each(function (i, el) {
+          const randId = "edit-" + Math.random().toString(16).slice(2);
+          const $this = $(el).closest(".editable"); //using closest here in case users click on an element within and editable div. closest will grab either this element if it has .editable, or the next closest element that does.
+          const canDrag = $this.hasClass("draggable");
+          const canResize = $this.hasClass("resizable");
+          $this.attr("Id", randId);
+          if (canDrag) {
+            $this.draggable({ stack: ".editable" });
+            $("<div class='mover'>X</div>").appendTo($this);
+          }
+          if (canResize) {
+            $this.resizable();
+          }
+        });
+
+        $(".editable").on("mousedown", function () {
+          if ($(".selected").length > 1) {
+            $(".selected").removeClass("selected");
+            $(".show_mover").removeClass("show_mover");
+            // $(".edit_window").removeClass("active_edit_window");
+          }
+          editContentOptions("headline", this);
+          const $this = $(this);
+          const canDrag = $this.hasClass("draggable");
+          console.log($this.closest(".draggable").length > 0);
+          const canResize = $this.hasClass("resizable");
+          $(".edit_window").addClass("active_edit_window");
+          $this.addClass("selected");
+          if (canDrag) {
+            $this.find(".mover").addClass("show_mover");
+          }
+          // if (canResize) {
+          //   $this.resizable({ containment: "parent" });
+          // }
+        });
+
+        //Deselect items if click anywhere else
+        $("body").on("mousedown", function (e) {
+          const $this = $(e.target);
+          const isSelectedItem = $this.closest(".selected").length > 0 || $this.hasClass(".selected");
+          const isEditForm = $this.closest(".edit_window").length > 0 || $this.hasClass(".edit_window");
+          if (!isSelectedItem && !isEditForm) {
+            $(".selected").removeClass("selected");
+            $(".show_mover").removeClass("show_mover");
+            $(".edit_window").removeClass("active_edit_window");
+          }
+        });
+
+        function allowEditableTextWithDraggable() {
+          $("[contenteditable=true]").on("mouseover", function () {
+            $(this).parents(".draggable").draggable({ disabled: true });
+            $(this).on("mouseout", function () {
+              $(this).parents(".draggable").draggable("enable");
+            });
+          });
+        }
+
+        allowEditableTextWithDraggable();
+        const widgets = {
+          headline: {
+            fields: [
+              {
+                element: "input",
+                type: "text",
+                label: "Headline",
+                api_name: "Subject__c",
+              },
+            ],
+          },
+        };
+        function editContentOptions(widget, selectedElement) {
+          const editForm = $("#edit_form");
+          editForm.empty();
+          const widgetContent = widgets[widget];
+          console.log(widgetContent);
+          widgetContent.fields.forEach((element, i) => {
+            editForm.append(`<label for='${element.label}_${i}'>${element.label}</label>`);
+            const newEl = $(`<${element.element}>`);
+            newEl.attr("id", `${element.label}_${i}`);
+            editForm.append(newEl);
+          });
+        }
+      });
+    </script>
+  </body>
+</html>
+<!-- logo, headline, body, background color, background image, CTA button
+choose  background color, gradient?
+choose cta color, border
+choose font colors for all
+can move and size all elements
+choose font type/
+-->
