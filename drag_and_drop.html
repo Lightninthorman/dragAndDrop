@@ -91,7 +91,7 @@
   <body>
     <main>
       <div id="edit_container">
-        <div id="edit-336x280" class="ad_container">
+        <div id="edit-336x280" class="ad_container" data-widget="ad_container">
           <div class="headline ui-widget-content draggable resizable editable" data-widget="headline">
             <!-- <div class="mover">X</div> -->
             <p contenteditable="true">Drag me around</p>
@@ -110,11 +110,11 @@
     <script>
       $(function () {
         $(".editable").each(function (i, el) {
-          const randId = "edit-" + Math.random().toString(16).slice(2);
+          // const randId = "edit-" + Math.random().toString(16).slice(2);
           const $this = $(el).closest(".editable"); //using closest here in case users click on an element within and editable div. closest will grab either this element if it has .editable, or the next closest element that does.
           const canDrag = $this.hasClass("draggable");
           const canResize = $this.hasClass("resizable");
-          $this.attr("Id", randId);
+          // $this.attr("Id", randId);
           if (canDrag) {
             $this.draggable({ stack: ".editable" });
             $("<div class='mover'>X</div>").appendTo($this);
@@ -125,7 +125,8 @@
         });
 
         $(".editable").on("mousedown", function () {
-          if ($(".selected").length > 1) {
+          console.log($(".selected").length);
+          if ($(".selected").length > 0) {
             $(".selected").removeClass("selected");
             $(".show_mover").removeClass("show_mover");
             // $(".edit_window").removeClass("active_edit_window");
@@ -133,7 +134,7 @@
           editContentOptions("headline", this);
           const $this = $(this);
           const canDrag = $this.hasClass("draggable");
-          console.log($this.closest(".draggable").length > 0);
+          // console.log($this.closest(".draggable").length > 0);
           const canResize = $this.hasClass("resizable");
           $(".edit_window").addClass("active_edit_window");
           $this.addClass("selected");
@@ -183,7 +184,7 @@
           const editForm = $("#edit_form");
           editForm.empty();
           const widgetContent = widgets[widget];
-          console.log(widgetContent);
+          // console.log(widgetContent);
           widgetContent.fields.forEach((element, i) => {
             editForm.append(`<label for='${element.label}_${i}'>${element.label}</label>`);
             const newEl = $(`<${element.element}>`);
