@@ -92,7 +92,7 @@
     <main>
       <div id="edit_container">
         <div id="edit-336x280" class="ad_container" data-widget="ad_container">
-          <div class="headline ui-widget-content draggable resizable editable" data-widget="headline">
+          <div id="headline_1234" class="headline ui-widget-content draggable resizable editable" data-widget="headline">
             <!-- <div class="mover">X</div> -->
             <p contenteditable="true">Drag me around</p>
           </div>
@@ -131,9 +131,11 @@
             $(".show_mover").removeClass("show_mover");
             // $(".edit_window").removeClass("active_edit_window");
           }
-          editContentOptions("headline", this);
+          // editContentOptions("headline", this);
           const $this = $(this);
           const canDrag = $this.hasClass("draggable");
+          const widget = $this.attr("data-widget");
+          const selectedElement = $this.attr("id");
           // console.log($this.closest(".draggable").length > 0);
           const canResize = $this.hasClass("resizable");
           $(".edit_window").addClass("active_edit_window");
@@ -144,6 +146,7 @@
           // if (canResize) {
           //   $this.resizable({ containment: "parent" });
           // }
+          editContentOptions(widget, selectedElement);
         });
 
         //Deselect items if click anywhere else
@@ -170,26 +173,35 @@
         allowEditableTextWithDraggable();
         const widgets = {
           headline: {
-            fields: [
+            sections: [
               {
-                element: "input",
-                type: "text",
-                label: "Headline",
-                api_name: "Subject__c",
+                section_name: "Headline",
+                elements: [
+                  {
+                    element: "input",
+                    type: "text",
+                    label: "Headline",
+                    api_name: "Subject__c",
+                  },
+                ],
               },
             ],
           },
         };
         function editContentOptions(widget, selectedElement) {
           const editForm = $("#edit_form");
+          console.log(widget);
           editForm.empty();
           const widgetContent = widgets[widget];
-          // console.log(widgetContent);
-          widgetContent.fields.forEach((element, i) => {
-            editForm.append(`<label for='${element.label}_${i}'>${element.label}</label>`);
-            const newEl = $(`<${element.element}>`);
-            newEl.attr("id", `${element.label}_${i}`);
-            editForm.append(newEl);
+          console.log(widgetContent);
+          widgetContent.sections.forEach((section, i) => {
+            editForm.append(`<section><h3>${section.section_name}</h3></section>`);
+            section.elements.forEach((element, i) => {
+              editForm.append(`<label for='${element.label}_${i}'>${element.label}</label>`);
+              const newEl = $(`<${element.element}>`);
+              newEl.attr("id", `${element.label}_${i}`);
+              editForm.append(newEl);
+            });
           });
         }
       });
